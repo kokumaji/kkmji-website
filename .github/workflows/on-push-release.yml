@@ -29,6 +29,8 @@ jobs:
     - name: Compress Build
       run: zip -r kkmjidev-dist.zip ./build
 
+    - name: List Files
+      run: ls -la
 
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.5.0
@@ -42,7 +44,7 @@ jobs:
 
     - name: Copy release to remote server
       run: |
-        scp kkmji-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
+        scp $GITHUB_WORKSPACE/kkmji-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
 
     - name: Extract files on remote server
       run: |
