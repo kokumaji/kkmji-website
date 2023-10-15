@@ -1,0 +1,26 @@
+name: Deploy Release to Remote Server
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: ${{ secrets.Deploy.SSH_PRIVATE_KEY }}
+
+    - name: Copy release to remote server
+      run: |
+        scp $GITHUB_WORKSPACE/${{ github.event.release.tarball_url }} {{ env.Deploy.REMOTE_USER }}@{{ env.Deploy.REMOTE_HOST }}:/var/www/kkmjidev
+
+    - name: Extract files on remote server
+      run: |
+        ssh {{ env.Deploy.REMOTE_USER }}@{{ env.Deploy.REMOTE_HOST }} 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip -q $GITHUB_WORKSPACE/$(basename ${github.event.release.tarball_url}) -d /var/www/kkmjidev/html'
