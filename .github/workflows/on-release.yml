@@ -16,6 +16,11 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Add known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -t ed25519 ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
     - name: Copy release to remote server
       run: |
