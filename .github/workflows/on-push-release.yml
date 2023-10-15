@@ -29,6 +29,25 @@ jobs:
     - name: Compress Build
       run: zip -r kkmjidev-dist.zip ./build
 
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Add known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -t ed25519 ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Copy release to remote server
+      run: |
+        scp kkmji-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
+
+    - name: Extract files on remote server
+      run: |
+        ssh "${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}" 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip ./kkmjidev.zip && mv kokumaji-kkmji-website-* html'
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -50,21 +69,3 @@ jobs:
         asset_path: kkmjidev-dist.zip # Change this to your build path
         asset_name: kkmji-dev-${{ github.sha }}.zip # Change the extension according to the build output format
         asset_content_type: application/zip
-
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.5.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Add known hosts
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -t ed25519 ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Copy release to remote server
-      run: |
-        scp ./kkmji-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
-
-    - name: Extract files on remote server
-      run: |
-        ssh "${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}" 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip ./kkmjidev.zip && mv kokumaji-kkmji-website-* html'
