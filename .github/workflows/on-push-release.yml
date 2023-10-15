@@ -48,7 +48,7 @@ jobs:
 
     - name: Extract files on remote server
       run: |
-        ssh "${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}" 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip ./kkmjidev.zip && mv kokumaji-kkmji-website-* html'
+        ssh "${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}" 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip ./kkmjidev-dist.zip && mv build html && rm kkmji-dist.zip'
 
     - name: Create Release
       id: create_release
