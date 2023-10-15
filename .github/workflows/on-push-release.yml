@@ -44,7 +44,7 @@ jobs:
 
     - name: Copy release to remote server
       run: |
-        scp $GITHUB_WORKSPACE/kkmji-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
+        scp $GITHUB_WORKSPACE/kkmjidev-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
 
     - name: Extract files on remote server
       run: |
