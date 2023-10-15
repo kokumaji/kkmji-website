@@ -15,12 +15,12 @@ jobs:
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.5.0
       with:
-        ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Copy release to remote server
       run: |
-        scp $GITHUB_WORKSPACE/${{ github.event.release.tarball_url }} {{ env.DEPLOY_REMOTE_USER }}@{{ env.DEPLOY_REMOTE_HOST }}:/var/www/kkmjidev
+        scp $GITHUB_WORKSPACE/${{ github.event.release.tarball_url }} {{ secrets.REMOTE_USER }}@{{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
 
     - name: Extract files on remote server
       run: |
-        ssh {{ env.DEPLOY_REMOTE_USER }}@{{ env.DEPLOY_REMOTE_HOST }} 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip -q $GITHUB_WORKSPACE/$(basename ${github.event.release.tarball_url}) -d /var/www/kkmjidev/html'
+        ssh {{ secrets.REMOTE_USER }}@{{ secrets.REMOTE_HOST }} 'cd /var/www/kkmjidev && mkdir -p backup && mv html backup && unzip -q $GITHUB_WORKSPACE/$(basename ${github.event.release.tarball_url}) -d /var/www/kkmjidev/html'
