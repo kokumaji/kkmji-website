@@ -22,18 +22,41 @@ jobs:
       # working-directory: ./michrg-worker-pwa
       run: npm install
 
-    - name: Build Vue project
+    - name: Build Website
       # working-directory: ./michrg-worker-pwa
       run: npm run build
 
+    - name: Compress Build
+      run: zip -r kkmjidev-dist.zip ./build
+
+    - name: List Files
+      run: ls -la
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Add known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -t ed25519 ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Copy release to remote server
+      run: |
+        scp $GITHUB_WORKSPACE/kkmjidev-dist.zip ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/kkmjidev
+
+    - name: Extract files on remote server
+      run: |
+        ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} 'cd /var/www/kkmjidev && rm -rf backup && mv html backup && unzip kkmjidev-dist.zip && mv build html && rm kkmjidev-dist.zip' 
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       with:
-        tag_name: ${{ github.sha }}
-        release_name: Release ${{ github.sha }}
+        tag_name: v${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
         draft: false
         prerelease: false
 
@@ -44,6 +67,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build # Change this to your build path
+        asset_path: kkmjidev-dist.zip # Change this to your build path
         asset_name: kkmji-dev-${{ github.sha }}.zip # Change the extension according to the build output format
         asset_content_type: application/zip
